@@ -318,15 +318,8 @@ export default function App() {
               <div className="flex items-center gap-2 bg-gray-800/40 border border-gray-700/50 rounded-xl px-3 py-1.5">
                 <span className="text-[10px] text-gray-500 font-medium">AI</span>
                 <button
-                  onClick={() => {
-                    if (!useAI && hasAIProviders) {
-                      setUseAI(true)
-                    } else if (useAI) {
-                      setUseAI(false)
-                    }
-                  }}
-                  disabled={!hasAIProviders}
-                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${useAI ? 'bg-violet-600' : 'bg-gray-700'} ${!hasAIProviders ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
+                  onClick={() => setUseAI(!useAI)}
+                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${useAI ? 'bg-violet-600' : 'bg-gray-700'} ${!hasAIProviders ? 'opacity-40' : 'cursor-pointer'}`}
                 >
                   <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${useAI ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
                 </button>
