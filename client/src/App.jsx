@@ -84,7 +84,13 @@ export default function App() {
   useEffect(() => {
     fetch('/api/ai/status')
       .then(res => res.json())
-      .then(data => setAiStatus(data))
+      .then(data => {
+        const normalized = {
+          available: data.available || data.providers?.length > 0,
+          providers: data.providers || (data.available ? [{ id: 'ollama', name: 'Ollama', models: data.models || [] }] : []),
+        }
+        setAiStatus(normalized)
+      })
       .catch(() => setAiStatus({ available: false, providers: [] }))
   }, [])
 
