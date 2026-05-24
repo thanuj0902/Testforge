@@ -2,10 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { generateJavaScriptTests } = require('./generators/javascript');
+const { generateTypeScriptTests } = require('./generators/typescript');
 const { generatePythonTests } = require('./generators/python');
 const { generateJavaTests } = require('./generators/java');
 const { generateGoTests } = require('./generators/go');
-const { checkOllama, generateWithAI } = require('./ai/ollama');
+const { checkOllama, generateWithAI: generateWithOllama } = require('./ai/ollama');
+const { checkOpenAI, generateWithAI: generateWithOpenAI } = require('./ai/openai');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -16,7 +18,7 @@ app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
 
 const generators = {
   javascript: { fn: generateJavaScriptTests, frameworks: ['Jest'] },
-
+  typescript: { fn: generateTypeScriptTests, frameworks: ['Jest'] },
   python: { fn: generatePythonTests, frameworks: ['pytest'] },
   java: { fn: generateJavaTests, frameworks: ['JUnit 5'] },
   go: { fn: generateGoTests, frameworks: ['testing'] },
@@ -44,15 +46,18 @@ app.get('/api/languages', (req, res) => {
 
 app.get('/api/ai/status', async (req, res) => {
   try {
-    const status = await checkOllama();
-    res.json(status);
+    const [ollama, openai] = await Promise.allSettled([checkOllama(), checkOpenAI()]);
+    const providers = [];
+    if (ollama.value?.available) providers.push({ id: 'ollama', name: 'Ollama', models: ollama.value.models });
+    if (openai.value?.available) providers.push({ id: 'openai', name: 'OpenAI', models: openai.value.models });
+    res.json({ available: providers.length > 0, providers });
   } catch {
-    res.json({ available: false, models: [] });
+    res.json({ available: false, providers: [] });
   }
 });
 
 app.post('/api/generate', async (req, res) => {
-  const { code, language, framework, useAI } = req.body;
+  const { code, language, framework, useAI, aiProvider } = req.body;
 
   const validationError = validateInput(code, language);
   if (validationError) {
@@ -62,13 +67,20 @@ app.post('/api/generate', async (req, res) => {
   const generator = generators[language];
 
   if (useAI) {
-    try {
-      const result = await generateWithAI(code, language, framework || generator.frameworks[0]);
-      if (result.success) {
-        return res.json({ testCode: result.testCode, mode: 'ai' });
+    const providers = [];
+    if (!aiProvider || aiProvider === 'ollama') providers.push(generateWithOllama);
+    if (!aiProvider || aiProvider === 'openai') providers.push(generateWithOpenAI);
+    if (aiProvider && aiProvider !== 'ollama' && aiProvider !== 'openai') providers.push(generateWithOllama, generateWithOpenAI);
+
+    for (const aiFn of providers) {
+      try {
+        const result = await aiFn(code, language, framework || generator.frameworks[0]);
+        if (result.success) {
+          return res.json({ testCode: result.testCode, mode: 'ai' });
+        }
+      } catch {
+        // try next provider
       }
-    } catch {
-      // fall through to engine
     }
   }
 

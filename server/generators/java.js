@@ -28,7 +28,7 @@ function extractClasses(code) {
 
     while ((m = methodRegex.exec(body)) !== null) {
       const methodName = m[1];
-      if (!['if', 'for', 'while', 'switch', 'catch'].includes(methodName) && !methodName.startsWith('_')) {
+      if (!['if', 'for', 'while', 'switch', 'catch'].includes(methodName) && !methodName.startsWith('_') && methodName !== name) {
         const params = m[2].split(',').map(p => {
           const parts = p.trim().split(/\s+/);
           return parts.length > 1 ? { name: parts[parts.length - 1], type: parts.slice(0, -1).join(' ') } : null;

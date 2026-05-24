@@ -45,8 +45,11 @@ function extractClasses(code) {
       const name = classMatch[1];
       const methods = [];
       i++;
-      while (i < lines.length && lines[i].startsWith(' ')) {
-        const methodMatch = lines[i].match(/def\s+(\w+)\s*\(([^)]*)\)/);
+      while (i < lines.length) {
+        const line = lines[i];
+        if (line.trim() === '') { i++; continue; }
+        if (!line.startsWith(' ')) break;
+        const methodMatch = line.match(/def\s+(\w+)\s*\(([^)]*)\)/);
         if (methodMatch) {
           const methodName = methodMatch[1];
           if (!methodName.startsWith('_')) {
