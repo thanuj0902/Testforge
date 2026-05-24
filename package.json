@@ -1,0 +1,12 @@
+{
+  "name": "testforge",
+  "version": "1.0.0",
+  "description": "AI-Powered Test Case Generator",
+  "scripts": {
+    "install:all": "cd server && npm install && cd ../client && npm install",
+    "build:client": "cd client && npm run build",
+    "build": "npm run install:all && npm run build:client",
+    "start": "cd server && npm start",
+    "dev": "cd server && npm run dev"
+  }
+}

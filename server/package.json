@@ -1,0 +1,18 @@
+{
+  "name": "test-case-generator-server",
+  "version": "1.0.0",
+  "description": "AI-Powered Test Case Generator",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "cors": "^2.8.6",
+    "axios": "^1.16.1"
+  }
+}
